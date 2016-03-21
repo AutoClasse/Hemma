@@ -13,6 +13,50 @@ DBNAME = 'hemma.db'
 log = logger.Logger(logger.DEBUG)
 
 
+def saveBatteryLevel(node_id, payload):
+    con = sqlite3.connect(DBNAME)
+    node_id = int(node_id)
+    value = int(float(payload))
+    d = str(datetime.datetime.now().isoformat())
+
+    cursor = con.execute("SELECT COUNT(NODE_ID) FROM BATTERY WHERE NODE_ID = ?", (node_id,))
+    rows = cursor.fetchone()
+    if rows[0] == 1:
+        con.execute("UPDATE BATTERY SET VALUE = ?, TIMESTAMP = ? WHERE NODE_ID = ?", (value, d, node_id))
+    else:
+        con.execute("INSERT INTO BATTERY (NODE_ID, VALUE, TIMESTAMP) VALUES(?,?,?)", (node_id, value, d))
+    con.commit()
+    con.close()
+
+    log.Writelog("Save battery info for node " + str(node_id), logger.DEBUG)
+
+
+def getBatteryLevel(node_id):
+    con = sqlite3.connect(DBNAME)
+    node_id = int(node_id)
+
+    cursor = con.execute("SELECT NODE_ID, VALUE, TIMESTAMP FROM BATTERY WHERE NODE_ID = ?", (node_id, ))
+    row = cursor.fetchone()
+
+    con.commit()
+    con.close()
+
+    return row
+
+
+def getAvailableSensorId():
+    con = sqlite3.connect(DBNAME)
+
+    # Change so that we look in all sensor tables
+    cursor = con.execute("SELECT MAX(NODE_ID) FROM SENSOR_VALUES")
+    row = cursor.fetchone()
+
+    con.commit()
+    con.close()
+
+    return row[0] + 1
+
+
 def saveValue(node_id, child_id, sub_type, value):
     con = sqlite3.connect(DBNAME)
     d = str(datetime.datetime.now().isoformat())
@@ -47,9 +91,9 @@ def saveValue(node_id, child_id, sub_type, value):
     con.commit()
     con.close()
 
+
 def getSensorValues(node_id, child_id, sub_type):
     con = sqlite3.connect(DBNAME)
-    d = str(datetime.datetime.now().isoformat())
     sub_type = int(sub_type)
     node_id = int(node_id)
     child_id = int(child_id)
@@ -65,7 +109,6 @@ def getSensorValues(node_id, child_id, sub_type):
 
 def getMinMaxValues(node_id, child_id, sub_type):
     con = sqlite3.connect(DBNAME)
-    d = str(datetime.datetime.now().isoformat())
     sub_type = int(sub_type)
     node_id = int(node_id)
     child_id = int(child_id)
@@ -100,13 +143,48 @@ def getProtocol(node_id):
     con = sqlite3.connect(DBNAME)
     node_id = int(node_id)
 
-    cursor = con.execute("SELECT PROTOCOL FROM SENSOR_PROTOCOLS WHERE NODE_ID = ?", (node_id,) )
+    cursor = con.execute("SELECT PROTOCOL, NAME, VERSION FROM SENSOR_PROTOCOLS WHERE NODE_ID = ?", (node_id,))
     row = cursor.fetchone()
 
     con.commit()
     con.close()
 
-    return row[0]
+    return row
+
+
+def saveSketchName(node_id, payload):
+    con = sqlite3.connect(DBNAME)
+    node_id = int(node_id)
+    payload = str(payload)
+
+    cursor = con.execute("SELECT COUNT(NODE_ID) FROM SENSOR_PROTOCOLS WHERE NODE_ID = ?", (node_id,))
+    rows = cursor.fetchone()
+    if rows[0] == 1:
+        con.execute("UPDATE SENSOR_PROTOCOLS SET NAME = ? WHERE NODE_ID = ?", (payload, node_id))
+    else:
+        con.execute("INSERT INTO SENSOR_PROTOCOLS (NODE_ID, NAME) VALUES(?,?)", (node_id, payload))
+    con.commit()
+    con.close()
+
+    log.Writelog("Save name information for node " + str(node_id), logger.DEBUG)
+
+
+def saveSketchVersion(node_id, payload):
+    con = sqlite3.connect(DBNAME)
+    node_id = int(node_id)
+    payload = str(payload)
+
+    cursor = con.execute("SELECT COUNT(NODE_ID) FROM SENSOR_PROTOCOLS WHERE NODE_ID = ?", (node_id,))
+    rows = cursor.fetchone()
+    if rows[0] == 1:
+        con.execute("UPDATE SENSOR_PROTOCOLS SET VERSION = ? WHERE NODE_ID = ?", (payload, node_id))
+    else:
+        con.execute("INSERT INTO SENSOR_PROTOCOLS (NODE_ID, VERSION) VALUES(?,?)", (node_id, payload))
+    con.commit()
+    con.close()
+
+    log.Writelog("Save version information for node " + str(node_id), logger.DEBUG)
+
 
 def saveSensor(node_id, sub_type, protocol):
     node_id = int(node_id)
@@ -118,7 +196,7 @@ def saveSensor(node_id, sub_type, protocol):
     if row[0] == 1:
         con.execute("UPDATE SUB_SENSORS SET PROTOCOL = ? WHERE NODE_ID = ? and sub_type = ?", (protocol, node_id, sub_type))
     else:
-        con.execute("INSERT INTO SUB_SENSORS (NODE_ID, SUB_TYPE, PROTOCOL) VALUES(?,?,?)", (node_id,sub_type, protocol))
+        con.execute("INSERT INTO SUB_SENSORS (NODE_ID, SUB_TYPE, PROTOCOL) VALUES(?,?,?)", (node_id, sub_type, protocol))
     con.commit()
     con.close()
 
@@ -162,7 +240,7 @@ def verifyUser(user, password):
     con = sqlite3.connect(DBNAME)
     cursor = con.execute("SELECT PASSWORD FROM USERS WHERE USER_ID = ?", (user,))
     rows = cursor.fetchone()
-    if rows == None:
+    if rows is None:
         return False
     con.commit()
     con.close()
@@ -184,7 +262,7 @@ def checkUser(user):
     numberOfRows = cursor.fetchone()[0]
     con.commit()
     con.close()
-    if  numberOfRows == 1:
+    if numberOfRows == 1:
         return True
     else:
         return False

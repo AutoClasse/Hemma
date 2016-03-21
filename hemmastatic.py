@@ -22,6 +22,8 @@ REQ = 2  # Requests a variable value (usually from an actuator destined for cont
 INTERNAL = 3  # This is a special internal message. See table below for the details
 STREAM = 4  # Used for OTA firmware updates
 
+NODE_SENSOR_ID = 255
+
 # When a presentation message is sent from a sensor, sub-type can one of the following:
 S_DOOR = 0  # Door and window sensors	V_TRIPPED, V_ARMED
 S_MOTION = 1  # Motion sensors	V_TRIPPED, V_ARMED

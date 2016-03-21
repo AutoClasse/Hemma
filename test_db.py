@@ -20,16 +20,28 @@ def test_cond(value_one, value_two):
 def testSaveProtocol():
     node_id = 999
     protocol = "Test protocol"
+    name = "name"
+    version = "v1"
     db.saveProtocol(node_id, protocol)
 
-    if not test_cond(db.getProtocol(node_id), protocol):
+    if not test_cond(db.getProtocol(node_id)[0], protocol):
             print "testSaveProtocol() 1 Failed to get protocol from db"
             return False
 
     db.saveProtocol(node_id, protocol)
-    if not test_cond(db.getProtocol(node_id), protocol):
+    if not test_cond(db.getProtocol(node_id)[0], protocol):
             print "testSaveProtocol() 2 Failed to get protocol from db"
             return False
+
+    db.saveSketchName(node_id, name)
+    if not db.getProtocol(node_id)[1] == name:
+        print "testSaveProtocol() 3 Failed to get name from db"
+        return False
+
+    db.saveSketchVersion(node_id, version)
+    if not db.getProtocol(node_id)[2] == version:
+        print "testSaveProtocol() 4 Failed to get version from db"
+        return False
 
     return True
 
@@ -107,7 +119,31 @@ def testSaveValue():
         print "testSaveValue() 6 failed to get min max values"
         return False
 
+    if not db.getAvailableSensorId() == (node_id + 1):
+        print "testSaveValue() 7 failed to get next sensor_id"
+        return False
+
     return True
+
+
+def testSaveBattery():
+    node_id = 999
+    payload = "50.0"
+
+    db.saveBatteryLevel(node_id, payload)
+
+    if not db.getBatteryLevel(node_id)[1] == int(float(payload)):
+        print "testSaveBattery() 1 failed to get battery value"
+        return False
+
+    payload = 78
+    db.saveBatteryLevel(node_id, payload)
+    if not db.getBatteryLevel(node_id)[1] == int(float(payload)):
+        print "testSaveBattery() 2 failed to get battery value"
+        return False
+
+    return True
+
 
 def testPassword():
     user = 'Test'
@@ -162,7 +198,7 @@ def cleandb():
 
 def main():
     errors = 0
-    tests = [testSaveProtocol, testSaveSensor, testSaveValue, testPassword]
+    tests = [testSaveProtocol, testSaveSensor, testSaveValue, testSaveBattery, testPassword]
 
     for testFunc in tests:
         if testFunc():

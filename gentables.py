@@ -9,8 +9,10 @@ DBNAME = 'hemma.db'
 con = sqlite3.connect(DBNAME)
 con.execute('''CREATE TABLE SENSOR_PROTOCOLS
     (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-    NODE_ID     INTEGER            NOT NULL,
-    PROTOCOL    TEXT            NOT NULL);''')
+    NODE_ID     INTEGER         NOT NULL,
+    PROTOCOL    TEXT            NOT NULL DEFAULT NA,
+    NAME        TEXT            NOT NULL DEFAULT NA,
+    VERSION     TEXT            NOT NULL DEFAULT NA);''')
 
 
 con.execute('''CREATE TABLE USERS
@@ -48,6 +50,12 @@ con.execute('''CREATE TABLE MIN_MAX_VALUES
 con.execute('''CREATE INDEX NODE_INDX
     ON MIN_MAX_VALUES
     (NODE_ID);''')
+
+con.execute('''CREATE TABLE BATTERY
+    (ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    NODE_ID     INTEGER         NOT NULL,
+    TIMESTAMP   TEXT            NOT NULL,
+    VALUE       INTEGER         NOT NULL);''')
 
 con.commit()
 con.close()

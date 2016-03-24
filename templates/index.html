@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
+<html class="no-js" lang="en" >
+
+<head>
+  <meta charset="utf-8">
+  <!-- If you delete this meta tag World War Z will become a reality -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sensor values</title>
+
+  <!-- If you are using the CSS version, only link these 2 files, you may add app.css to use for your overrides if you like -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/foundation.css">
+
+  <!-- If you are using the gem version, you need this only -->
+  <link rel="stylesheet" href="css/app.css">
+
+  <script src="js/vendor/modernizr.js"></script>
+
+</head>
+<body>
+
+    <nav class="top-bar" data-topbar role="navigation">
+        <ul class="title-area">
+            <li class="name">
+                <h1><a href="#">Hemma</a></h1>
+            </li>
+            <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+            <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+        </ul>
+
+        <section class="top-bar-section">
+            <!-- Right Nav Section -->
+            <ul class="right">
+                 <li><a href="/logout">Logout</a></li>
+            </ul>
+
+            <!-- Left Nav Section -->
+            <ul class="left">
+                <li class="active"><a href="/">Sensors</a></li>
+            </ul>
+        </section>
+    </nav>
+
+    <div id="sensorDiv" class= "row" align="center">
+    </div>
+
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
+    <script src="js/foundation/foundation.accordion.js"></script>
+
+    <script >
+
+        function updateSensorDiv(sens) {
+            var sensor_accord = '<ul class="accordion" data-accordion>';
+            for (var i = 0; i < sens.sensors.length; i++){
+                sensor_accord += '<li class="accordion-navigation">';
+                sensor_accord += '<a href="#panel' + i + '"><b>' + sens.sensors[i].node_id + '</b> </a>';
+                sensor_accord += '<div id="panel' + i + '" class="content active">';
+                sensor_accord += '<div class="row" align="center">';
+
+                for (j = 0; j < sens.sensors[i].subs.length; j++){
+                    sensor_accord += '<div class="medium-4 columns">';
+                    sensor_accord += '<h5>' + sens.sensors[i].subs[j].type + '</h5>';
+                    sensor_accord += '<h4>' + sens.sensors[i].subs[j].value + sens.sensors[i].subs[j].unit_sign + '</h4>';
+                    sensor_accord += '<p style="color:grey">min: ' + sens.sensors[i].subs[j].min + sens.sensors[i].subs[j].unit_sign + ', max: ' + sens.sensors[i].subs[j].max + sens.sensors[i].subs[j].unit_sign + '<br>';
+                    sensor_accord += '</div>';
+                }
+                sensor_accord += '</div></div></li>';
+            }
+            sensor_accord += '</ul>';
+
+            document.getElementById("sensorDiv").innerHTML = sensor_accord;
+        }
+
+        jQuery.get("/sensors", function(data){
+            updateSensorDiv(JSON.parse(data));
+            jQuery(document).foundation();
+            jQuery(document).foundation('accordion', { multi_expand: true });
+        });
+
+    </script>
+
+</body>
+</html>

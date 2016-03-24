@@ -44,8 +44,10 @@ con.execute('''CREATE TABLE MIN_MAX_VALUES
     NODE_ID     INTEGER         NOT NULL,
     CHILD_ID    INTEGER         NOT NULL,
     SUB_TYPE    INTEGER         NOT NULL,
-    MIN_VALUE    FLOAT           NOT NULL,
-    MAX_VALUE    FLOAT           NOT NULL);''')
+    TIMESTAMP   TEXT            NOT NULL,
+    CURRENT     TEXT            NOT NULL,
+    MIN_VALUE    FLOAT          NOT NULL,
+    MAX_VALUE    FLOAT          NOT NULL);''')
 
 con.execute('''CREATE INDEX NODE_INDX
     ON MIN_MAX_VALUES

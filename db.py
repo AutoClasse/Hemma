@@ -13,6 +13,39 @@ DBNAME = 'hemma.db'
 log = logger.Logger(logger.DEBUG)
 
 
+def getSensorsDataJSON():
+    con = sqlite3.connect(DBNAME)
+    return_string = '{"sensors" : ['
+
+    cursor = con.execute("SELECT DISTINCT NODE_ID FROM MIN_MAX_VALUES")
+    nodes = cursor.fetchall()
+    con.close()
+
+    for node in nodes:
+        return_string = return_string + '{ "node_id" : "' + str(node[0]) + '", "subs" : '
+        return_string = return_string + str(getSensorDataJSON(node[0]))
+        return_string = return_string + ' },'
+
+    return_string = return_string[:-1] + ']}'
+
+    return return_string
+
+
+def getSensorDataJSON(node_id):
+    return_string = "["
+    con = sqlite3.connect(DBNAME)
+    cursor = con.execute("SELECT CHILD_ID, SUB_TYPE, CURRENT, MIN_VALUE, MAX_VALUE FROM MIN_MAX_VALUES WHERE NODE_ID = ?", (node_id,))
+    sub_sensor = cursor.fetchall()
+
+    for sub in sub_sensor:
+        return_string = return_string + '{"type":"' + hs.sub_type_list[sub[1]] + '", "value" : "' + sub[2] + '", "unit_sign" : "' + hs.unit_list[sub[1]]
+        return_string += '","max":"' + str(sub[4]) + '","min":"' + str(sub[3]) + '"},'
+
+    return_string = return_string[:-1] + "]"
+
+    return return_string
+
+
 def saveBatteryLevel(node_id, payload):
     con = sqlite3.connect(DBNAME)
     node_id = int(node_id)
@@ -77,16 +110,17 @@ def saveValue(node_id, child_id, sub_type, value):
     else:
         con.execute("INSERT INTO SENSOR_VALUES (NODE_ID, CHILD_ID, SUB_TYPE, TIMESTAMP, VALUE) VALUES(?,?,?,?,?)",(node_id, child_id, sub_type, d, value))
 
-        # Set min max values for these sub types
-        if sub_type == hs.V_TEMP or sub_type == hs.V_HUM or sub_type == hs.V_PRESSURE:
-            value = float(value)
-            cursor = con.execute("SELECT COUNT(*) FROM MIN_MAX_VALUES WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (node_id, sub_type, child_id))
+    # Set min max values for these sub types
+    if sub_type == hs.V_TEMP or sub_type == hs.V_HUM or sub_type == hs.V_PRESSURE:
+        value = float(value)
+        cursor = con.execute("SELECT COUNT(*) FROM MIN_MAX_VALUES WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (node_id, sub_type, child_id))
 
-            if cursor.fetchone()[0] == 0:
-                con.execute("INSERT INTO MIN_MAX_VALUES (NODE_ID, SUB_TYPE, CHILD_ID, MIN_VALUE, MAX_VALUE) VALUES(?,?,?,?,?)", (node_id, sub_type, child_id, value, value))
-            else:
-                con.execute("UPDATE MIN_MAX_VALUES SET MIN_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MIN_VALUE > ?", (value, node_id, sub_type, child_id, value))
-                con.execute("UPDATE MIN_MAX_VALUES SET MAX_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MAX_VALUE < ?", (value, node_id, sub_type, child_id, value))
+        if cursor.fetchone()[0] == 0:
+            con.execute("INSERT INTO MIN_MAX_VALUES (NODE_ID, SUB_TYPE, CHILD_ID, MIN_VALUE, MAX_VALUE, CURRENT, TIMESTAMP) VALUES(?,?,?,?,?,?,?)", (node_id, sub_type, child_id, value, value, value, d))
+        else:
+            con.execute("UPDATE MIN_MAX_VALUES SET CURRENT = ?, TIMESTAMP = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (value, d, node_id, sub_type, child_id))
+            con.execute("UPDATE MIN_MAX_VALUES SET MIN_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MIN_VALUE > ?", (value, node_id, sub_type, child_id, value))
+            con.execute("UPDATE MIN_MAX_VALUES SET MAX_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MAX_VALUE < ?", (value, node_id, sub_type, child_id, value))
 
     con.commit()
     con.close()

@@ -139,3 +139,23 @@ I_GET_NONCE_RESPONSE = 17  # Used between sensors for nonce response.
 #  12;6;1;0;0;36.5\n
 #  Received command from the controller that should be passed to radio network: Outgoing message to node 13. Set V_LIGHT variable to 1 (=turn on) for child sensor 7. No ack is requested from destination node.
 #  13;7;1;0;2;1\n
+
+
+sub_type_list = ['Temperature',
+                  'Humidity',
+                  'ON/OFF',
+                  'Percentage','Pressure','Whether forecast','Amount of rain','Rate of rain','Windspeed','Gust','Wind direction',
+                  'UV light level','Weight','Distance','Impedance','Armed status of a security sensor','Tripped status of a security sensor',
+                  'Watt', 'Accumulated number of KWH','Turn on a scene','Turn of a scene','Mode of heater','Heater fan speed','light level',
+                  'VAR1','VAR2','VAR3','VAR4','VAR5','Window covering up','Window covering down','Window covering stop', 'IR','IR',
+                  'Flow of water','Water volume','lock status','level-value','Voltage','Current','RGB value','RGB value',
+                  'ID','Prefix','HVAC cold setpoint', 'HVAC/Heater setpoint', 'FLOW_MODE']
+
+
+unit_list = [' C',' %',' ON/OFF',
+                  ' %',' hPa','Whether forecast','Amount of rain','Rate of rain','Windspeed','Gust','Wind direction',
+                  'UV light level','Weight','Distance','Impedance','Armed status of a security sensor','Tripped status of a security sensor',
+                  'Watt', 'Accumulated number of KWH','Turn on a scene','Turn of a scene','Mode of heater','Heater fan speed','light level',
+                  'VAR1','VAR2','VAR3','VAR4','VAR5','Window covering up','Window covering down','Window covering stop', 'IR','IR',
+                  'Flow of water','Water volume','lock status','level-value','Voltage','Current','RGB value','RGB value',
+                  'ID','Prefix','HVAC cold setpoint', 'HVAC/Heater setpoint', 'FLOW_MODE']

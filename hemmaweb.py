@@ -4,6 +4,9 @@ import web
 import os
 import db
 from jose import jwt
+from jose.exceptions import JWSError
+import hemmaconfig as hc
+
 
 web.config.debug = False
 
@@ -41,10 +44,15 @@ def notLogdeIn():
     if token is None:
         return True
 
-    if jwt.decode(token, 'Hemligt', algorithms=['HS256'])['logedin'] == 'true':
+    try:
+        if jwt.decode(token, hc.JWT_KEY, algorithms=['HS256'])['logedin'] == 'true':
+            return False
+        else:
+            return True
+    except JWSError:
+        web.setcookie('akey', 'logout', 1)
         return False
-    else:
-        return True
+
 
 
 class login:

@@ -63,7 +63,8 @@
                     sensor_accord += '<div class="medium-4 columns">';
                     sensor_accord += '<h5>' + sens.sensors[i].subs[j].type + '</h5>';
                     sensor_accord += '<h4>' + sens.sensors[i].subs[j].value + sens.sensors[i].subs[j].unit_sign + '</h4>';
-                    sensor_accord += '<p style="color:grey">min: ' + sens.sensors[i].subs[j].min + sens.sensors[i].subs[j].unit_sign + ', max: ' + sens.sensors[i].subs[j].max + sens.sensors[i].subs[j].unit_sign + '<br>';
+                    sensor_accord += '<p style="color:grey">min: ' + sens.sensors[i].subs[j].min + sens.sensors[i].subs[j].unit_sign + ', max: ' + sens.sensors[i].subs[j].max + sens.sensors[i].subs[j].unit_sign + '</p>';
+                    sensor_accord += '<p style="color:grey"> '+ sens.sensors[i].subs[j].timestamp + '</p>';
                     sensor_accord += '</div>';
                 }
                 sensor_accord += '</div></div></li>';

@@ -38,8 +38,9 @@ def getSensorDataJSON(node_id):
     sub_sensor = cursor.fetchall()
 
     for sub in sub_sensor:
+        time_stamp = sub[5][0:10] + " " + sub[5][11:19]
         return_string = return_string + '{"type":"' + hs.sub_type_list[sub[1]] + '", "value" : "' + sub[2] + '", "unit_sign" : "' + hs.unit_list[sub[1]]
-        return_string += '","max":"' + str(sub[4]) + '","min":"' + str(sub[3]) + '","timestamp":"' + str(sub[5]) + '"},'
+        return_string += '","max":"' + str(sub[4]) + '","min":"' + str(sub[3]) + '","timestamp":"' + str(time_stamp) + '"},'
 
     return_string = return_string[:-1] + "]"
 

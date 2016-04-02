@@ -64,7 +64,7 @@ class login:
         s = web.input(user=None, password=None)
 
         if db.verifyUser(s.user, s.password):
-            token = jwt.encode({'user': s.user, 'logedin': 'true'}, 'Hemligt', algorithm='HS256')
+            token = jwt.encode({'user': s.user, 'logedin': 'true'}, hc.JWT_KEY, algorithm='HS256')
             web.setcookie('akey', token, 864000)
             raise web.seeother('/')
 

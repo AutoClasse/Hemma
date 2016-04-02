@@ -34,12 +34,12 @@ def getSensorsDataJSON():
 def getSensorDataJSON(node_id):
     return_string = "["
     con = sqlite3.connect(DBNAME)
-    cursor = con.execute("SELECT CHILD_ID, SUB_TYPE, CURRENT, MIN_VALUE, MAX_VALUE FROM MIN_MAX_VALUES WHERE NODE_ID = ?", (node_id,))
+    cursor = con.execute("SELECT CHILD_ID, SUB_TYPE, CURRENT, MIN_VALUE, MAX_VALUE, TIMESTAMP FROM MIN_MAX_VALUES WHERE NODE_ID = ?", (node_id,))
     sub_sensor = cursor.fetchall()
 
     for sub in sub_sensor:
         return_string = return_string + '{"type":"' + hs.sub_type_list[sub[1]] + '", "value" : "' + sub[2] + '", "unit_sign" : "' + hs.unit_list[sub[1]]
-        return_string += '","max":"' + str(sub[4]) + '","min":"' + str(sub[3]) + '"},'
+        return_string += '","max":"' + str(sub[4]) + '","min":"' + str(sub[3]) + '","timestamp":"' + str(sub[5]) + '"},'
 
     return_string = return_string[:-1] + "]"
 

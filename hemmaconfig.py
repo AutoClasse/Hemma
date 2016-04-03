@@ -8,3 +8,5 @@ LOG_FILE = "gateway.log"
 
 # (M)etric or (I)mperal
 UNITS = "M"
+
+JWT_KEY = "ChAnGeThiS" #Change this to some secret string. Used as a key in the jwt  

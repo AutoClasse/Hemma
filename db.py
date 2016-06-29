@@ -92,6 +92,7 @@ def getAvailableSensorId():
 
 
 def saveValue(node_id, child_id, sub_type, value):
+    # TODO fix more error handling check if the value type and the sensor type matches
     con = sqlite3.connect(DBNAME)
     d = str(datetime.datetime.now().isoformat())
     sub_type = int(sub_type)
@@ -113,15 +114,20 @@ def saveValue(node_id, child_id, sub_type, value):
 
     # Set min max values for these sub types
     if sub_type == hs.V_TEMP or sub_type == hs.V_HUM or sub_type == hs.V_PRESSURE:
-        value = float(value)
-        cursor = con.execute("SELECT COUNT(*) FROM MIN_MAX_VALUES WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (node_id, sub_type, child_id))
+        try:
+            value = float(value)
 
-        if cursor.fetchone()[0] == 0:
-            con.execute("INSERT INTO MIN_MAX_VALUES (NODE_ID, SUB_TYPE, CHILD_ID, MIN_VALUE, MAX_VALUE, CURRENT, TIMESTAMP) VALUES(?,?,?,?,?,?,?)", (node_id, sub_type, child_id, value, value, value, d))
-        else:
-            con.execute("UPDATE MIN_MAX_VALUES SET CURRENT = ?, TIMESTAMP = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (value, d, node_id, sub_type, child_id))
-            con.execute("UPDATE MIN_MAX_VALUES SET MIN_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MIN_VALUE > ?", (value, node_id, sub_type, child_id, value))
-            con.execute("UPDATE MIN_MAX_VALUES SET MAX_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MAX_VALUE < ?", (value, node_id, sub_type, child_id, value))
+            cursor = con.execute("SELECT COUNT(*) FROM MIN_MAX_VALUES WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (node_id, sub_type, child_id))
+
+            if cursor.fetchone()[0] == 0:
+                con.execute("INSERT INTO MIN_MAX_VALUES (NODE_ID, SUB_TYPE, CHILD_ID, MIN_VALUE, MAX_VALUE, CURRENT, TIMESTAMP) VALUES(?,?,?,?,?,?,?)", (node_id, sub_type, child_id, value, value, value, d))
+            else:
+                con.execute("UPDATE MIN_MAX_VALUES SET CURRENT = ?, TIMESTAMP = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ?", (value, d, node_id, sub_type, child_id))
+                con.execute("UPDATE MIN_MAX_VALUES SET MIN_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MIN_VALUE > ?", (value, node_id, sub_type, child_id, value))
+                con.execute("UPDATE MIN_MAX_VALUES SET MAX_VALUE = ? WHERE NODE_ID = ? AND SUB_TYPE = ? AND CHILD_ID = ? AND MAX_VALUE < ?", (value, node_id, sub_type, child_id, value))
+
+        except ValueError:
+            log.Writelog("Error parsing value to float", logger.ERROR)
 
     con.commit()
     con.close()

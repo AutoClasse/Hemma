@@ -28,7 +28,7 @@ class gatewayListner(threading.Thread):
             if (len(message) > 0):
                 log.Writelog("Read message [" + message + "]", logger.DEBUG)
                 message_list = message.split(";")
-                if(len(message_list) == 6):
+                if(self.sanityCheck(message_list)):
                     self.node_id = self.num(message_list[0])
                     self.child_sensor_id = self.num(message_list[1])
                     self.message_type = self.num(message_list[2])
@@ -43,6 +43,56 @@ class gatewayListner(threading.Thread):
             # Check for stop signal
             if not stopQueue.empty():
                 running = stopQueue.get()
+
+    def sanityCheck(self, message_list):
+        # message_list must be six elements long
+        if (len(message_list) != 6):
+            return False
+
+        # Check node_id 0-254
+        node_id = self.num(message_list[0])
+        if(node_id > 254 or node_id < 0 or node_id is False):
+            return False
+
+        # Check child_sensor_id 0-254
+        child_sensor_id = self.num(message_list[1])
+        if(child_sensor_id > 254 or child_sensor_id < 0 or child_sensor_id is False):
+            return False
+
+        # Check message_type 0-4
+        message_type = self.num(message_list[2])
+        if(message_type > 4 or message_type < 0 or message_type is False):
+            return False
+
+        # Check ack 0 or 1
+        ack = self.num(message_list[3])
+        if (ack < 0 or ack > 1 or ack is False):
+            return False
+
+        # Check sub_type depends on message_type
+        # m    vaild values
+        # 0    0-35
+        # 1    0-46
+        # 2    0-46
+        # 3    0-17
+        # 4    ?
+        sub_type = self.num(message_list[4])
+        upper_limit = 0
+        if (message_type == 0):
+            upper_limit = 35
+        if (message_type == 1):
+            upper_limit = 46
+        if (message_type == 2):
+            upper_limit = 46
+        if (message_type == 3):
+            upper_limit = 17
+
+        if (sub_type < 0 or sub_type > upper_limit or sub_type is False):
+            return False
+
+        # TODO Check payload many combinations
+
+        return True
 
     def process(self, message_list):
         log.Writelog("Prossesing message [" + str(message_list) + "]", logger.DEBUG)
@@ -107,7 +157,8 @@ class gatewayListner(threading.Thread):
         try:
             return int(s)
         except ValueError:
-            log.Writelog("Can't parse message [" + str(self.message_list) + "] '" + s + "' is not an integer", logger.WARNING)
+            log.Writelog("Can't parse ''" + s + "' is not an integer", logger.WARNING)
+            return False
 
 
 def main():

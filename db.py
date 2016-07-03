@@ -13,16 +13,40 @@ DBNAME = 'hemma.db'
 log = logger.Logger(logger.DEBUG)
 
 
+def saveSensorNames(sensor_names):
+
+    con = sqlite3.connect(DBNAME)
+
+    with con:
+        for name in sensor_names:
+            node_id = int(name['name'])
+            node_name = str(name['value'])
+
+            rows = con.execute("SELECT COUNT(*) FROM SENSOR_PROTOCOLS WHERE NODE_ID = ?", (node_id,)).fetchone()
+            if rows[0] == 1:
+                con.execute("UPDATE SENSOR_PROTOCOLS SET NAME = ? WHERE NODE_ID = ?", (node_name, node_id))
+            else:
+                con.execute("INSERT INTO SENSOR_PROTOCOLS (NODE_ID, NAME) VALUES(?,?)", (node_id, node_name))
+
+    log.Writelog("Updated sensor names ", logger.DEBUG)
+
+    return "Success"
+
+
 def getSensorsDataJSON():
     con = sqlite3.connect(DBNAME)
     return_string = '{"sensors" : ['
 
-    cursor = con.execute("SELECT DISTINCT NODE_ID FROM MIN_MAX_VALUES")
+    cursor = con.execute("""SELECT DISTINCT MIN_MAX_VALUES.NODE_ID, SENSOR_PROTOCOLS.NAME
+                            FROM MIN_MAX_VALUES
+                            LEFT JOIN SENSOR_PROTOCOLS
+                            ON MIN_MAX_VALUES.NODE_ID = SENSOR_PROTOCOLS.NODE_ID""")
     nodes = cursor.fetchall()
     con.close()
 
     for node in nodes:
-        return_string = return_string + '{ "node_id" : "' + str(node[0]) + '", "subs" : '
+        print node
+        return_string = return_string + '{ "node_id" : "' + str(node[0]) + '", "node_name" : "' + str(node[1]) + '", "subs" : '
         return_string = return_string + str(getSensorDataJSON(node[0]))
         return_string = return_string + ' },'
 

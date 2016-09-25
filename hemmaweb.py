@@ -6,7 +6,8 @@ import db
 from jose import jwt
 from jose.exceptions import JWSError
 import hemmaconfig as hc
-
+import json
+import sys
 
 web.config.debug = False
 
@@ -19,6 +20,7 @@ urls = (
     '/sensors', 'sensors',
     '/(js|css)/(.*)', 'static',
     '/images/(.*)', 'images',
+    '/settings', 'settings'
 )
 
 
@@ -51,8 +53,7 @@ def notLogdeIn():
             return True
     except JWSError:
         web.setcookie('akey', 'logout', 1)
-        return False
-
+        return True
 
 
 class login:
@@ -74,11 +75,33 @@ class login:
 # This code is for serving static files
 class static:
     def GET(self, media, file):
+        open_as = 'r'
+        if file[-4:] == '.eot' or file[-4:] == '.svg' or file[-4:] == '.ttf' or file[-5:] == '.woff':
+            open_as = 'rb'
         try:
-            f = open(media+'/'+file, 'r')
+            f = open(media+'/'+file, open_as)
             return f.read()
         except:
             return ''  # you can send an 404 error here if you want
+
+
+class settings:
+    def GET(self):
+        if notLogdeIn():
+            raise web.seeother('/login')
+        else:
+            return render.settings()
+
+    def POST(self):
+        if notLogdeIn():
+            raise web.seeother('/login')
+        else:
+            s = json.loads(web.input(formData=None)['formData'])
+            try:
+                return db.saveSensorNames(s)
+            except:
+                print sys.exc_info()[0]
+                return "Fail"
 
 
 class sensors:

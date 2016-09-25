@@ -53,7 +53,7 @@ def notLogdeIn():
             return True
     except JWSError:
         web.setcookie('akey', 'logout', 1)
-        return False
+        return True
 
 
 class login:
